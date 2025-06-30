@@ -4,7 +4,7 @@ from app.extensions import db
 
 def get_all_order_items():
     items = OrderItem.query.all()
-    return jsonify([i.__dict__ for i in items])
+    return jsonify([i.to_dict() for i in items])
 
 def create_order_item():
     data = request.get_json()
@@ -20,11 +20,11 @@ def create_order_item():
     )
     db.session.add(item)
     db.session.commit()
-    return jsonify(item.__dict__), 201
+    return jsonify(item.to_dict()), 201
 
 def get_order_item_by_id(item_id):
     item = OrderItem.query.get_or_404(item_id)
-    return jsonify(item.__dict__)
+    return jsonify(item.to_dict())
 
 def update_order_item(item_id):
     item = OrderItem.query.get_or_404(item_id)
@@ -33,7 +33,7 @@ def update_order_item(item_id):
         if key in data:
             setattr(item, key, data[key])
     db.session.commit()
-    return jsonify(item.__dict__)
+    return jsonify(item.to_dict())
 
 def delete_order_item(item_id):
     item = OrderItem.query.get_or_404(item_id)

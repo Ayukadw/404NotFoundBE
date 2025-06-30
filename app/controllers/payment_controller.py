@@ -4,7 +4,7 @@ from app.extensions import db
 
 def get_all_payments():
     payments = Payment.query.all()
-    return jsonify([p.__dict__ for p in payments])
+    return jsonify([p.to_dict() for p in payments])
 
 def create_payment():
     data = request.get_json()
@@ -22,11 +22,11 @@ def create_payment():
     )
     db.session.add(payment)
     db.session.commit()
-    return jsonify(payment.__dict__), 201
+    return jsonify(payment.to_dict()), 201
 
 def get_payment_by_id(payment_id):
     payment = Payment.query.get_or_404(payment_id)
-    return jsonify(payment.__dict__)
+    return jsonify(payment.to_dict())
 
 def update_payment(payment_id):
     payment = Payment.query.get_or_404(payment_id)
@@ -35,7 +35,7 @@ def update_payment(payment_id):
         if key in data:
             setattr(payment, key, data[key])
     db.session.commit()
-    return jsonify(payment.__dict__)
+    return jsonify(payment.to_dict())
 
 def delete_payment(payment_id):
     payment = Payment.query.get_or_404(payment_id)

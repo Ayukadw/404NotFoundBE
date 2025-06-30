@@ -4,7 +4,7 @@ from app.extensions import db
 
 def get_all_sizes():
     sizes = Size.query.all()
-    return jsonify([s.__dict__ for s in sizes])
+    return jsonify([s.to_dict() for s in sizes])
 
 def create_size():
     data = request.get_json()
@@ -14,11 +14,11 @@ def create_size():
     size = Size(name=data['name'])
     db.session.add(size)
     db.session.commit()
-    return jsonify(size.__dict__), 201
+    return jsonify(size.to_dict()), 201
 
 def get_size_by_id(size_id):
     size = Size.query.get_or_404(size_id)
-    return jsonify(size.__dict__)
+    return jsonify(size.to_dict())
 
 def update_size(size_id):
     size = Size.query.get_or_404(size_id)
@@ -26,7 +26,7 @@ def update_size(size_id):
     if 'name' in data:
         size.name = data['name']
     db.session.commit()
-    return jsonify(size.__dict__)
+    return jsonify(size.to_dict())
 
 def delete_size(size_id):
     size = Size.query.get_or_404(size_id)

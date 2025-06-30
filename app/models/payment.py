@@ -13,3 +13,14 @@ class Payment(db.Model):
 
     # Relationships
     order = db.relationship('Order', back_populates='payment', uselist=False)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'order_id': self.order_id,
+            'payment_method': self.payment_method,
+            'proof_image': self.proof_image,
+            'status': self.status,
+            'submitted_at': self.submitted_at.isoformat() if self.submitted_at else None,
+            'verified_at': self.verified_at.isoformat() if self.verified_at else None
+        }

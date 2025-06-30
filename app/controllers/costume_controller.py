@@ -4,7 +4,7 @@ from app.extensions import db
 
 def get_all_costumes():
     costumes = Costume.query.all()
-    return jsonify([c.__dict__ for c in costumes])
+    return jsonify([c.to_dict() for c in costumes])
 
 def create_costume():
     data = request.get_json()
@@ -24,11 +24,11 @@ def create_costume():
     )
     db.session.add(costume)
     db.session.commit()
-    return jsonify(costume.__dict__), 201
+    return jsonify(costume.to_dict()), 201
 
 def get_costume_by_id(costume_id):
     costume = Costume.query.get_or_404(costume_id)
-    return jsonify(costume.__dict__)
+    return jsonify(costume.to_dict())
 
 def update_costume(costume_id):
     costume = Costume.query.get_or_404(costume_id)
@@ -37,7 +37,7 @@ def update_costume(costume_id):
         if key in data:
             setattr(costume, key, data[key])
     db.session.commit()
-    return jsonify(costume.__dict__)
+    return jsonify(costume.to_dict())
 
 def delete_costume(costume_id):
     costume = Costume.query.get_or_404(costume_id)

@@ -12,3 +12,12 @@ class OrderItem(db.Model):
     # Relationships
     order = db.relationship('Order', back_populates='order_items')
     costume = db.relationship('Costume', back_populates='order_items')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'order_id': self.order_id,
+            'costume_id': self.costume_id,
+            'quantity': self.quantity,
+            'price_snapshot': self.price_snapshot
+        }

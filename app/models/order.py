@@ -15,3 +15,14 @@ class Order(db.Model):
     order_items = db.relationship('OrderItem', back_populates='order', lazy=True)
     payment = db.relationship('Payment', back_populates='order', uselist=False)
     user = db.relationship("User", back_populates="orders")
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'rental_date': self.rental_date.isoformat() if self.rental_date else None,
+            'return_date': self.return_date.isoformat() if self.return_date else None,
+            'address': self.address,
+            'status': self.status,
+            'payment_status': self.payment_status
+        }

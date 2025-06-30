@@ -8,3 +8,9 @@ class Size(db.Model):
 
     # Relationships
     costumes = db.relationship('Costume', back_populates='size', lazy=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name
+        }

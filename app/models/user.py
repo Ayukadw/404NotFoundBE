@@ -12,3 +12,12 @@ class User(db.Model):
 
     # Relationship
     orders = db.relationship('Order', back_populates='user', lazy=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'email': self.email,
+            'phone': self.phone,
+            'role': self.role
+        }

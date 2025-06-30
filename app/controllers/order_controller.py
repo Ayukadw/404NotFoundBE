@@ -7,7 +7,7 @@ from app.extensions import db
 
 def get_all_orders():
     orders = Order.query.all()
-    return jsonify([o.__dict__ for o in orders])
+    return jsonify([o.to_dict() for o in orders])
 
 def create_order():
     data = request.get_json()
@@ -25,11 +25,11 @@ def create_order():
     )
     db.session.add(new_order)
     db.session.commit()
-    return jsonify(new_order.__dict__), 201
+    return jsonify(new_order.to_dict()), 201
 
 def get_order_by_id(order_id):
     order = Order.query.get_or_404(order_id)
-    return jsonify(order.__dict__)
+    return jsonify(order.to_dict())
 
 def update_order(order_id):
     order = Order.query.get_or_404(order_id)
@@ -38,7 +38,7 @@ def update_order(order_id):
         if key in data:
             setattr(order, key, data[key])
     db.session.commit()
-    return jsonify(order.__dict__)
+    return jsonify(order.to_dict())
 
 def delete_order(order_id):
     order = Order.query.get_or_404(order_id)

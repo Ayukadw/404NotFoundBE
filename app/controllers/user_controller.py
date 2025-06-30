@@ -4,11 +4,11 @@ from app.extensions import db
 
 def get_all_users():
     users = User.query.all()
-    return jsonify([u.__dict__ for u in users])
+    return jsonify([u.to_dict() for u in users])
 
 def get_user_by_id(user_id):
     user = User.query.get_or_404(user_id)
-    return jsonify(user.__dict__)
+    return jsonify(user.to_dict())
 
 def create_user():
     data = request.get_json()
@@ -25,7 +25,7 @@ def create_user():
     )
     db.session.add(new_user)
     db.session.commit()
-    return jsonify(new_user.__dict__), 201
+    return jsonify(new_user.to_dict()), 201
 
 def update_user(user_id):
     user = User.query.get_or_404(user_id)
@@ -34,7 +34,7 @@ def update_user(user_id):
         if key in data:
             setattr(user, key, data[key])
     db.session.commit()
-    return jsonify(user.__dict__)
+    return jsonify(user.to_dict())
 
 def delete_user(user_id):
     user = User.query.get_or_404(user_id)
