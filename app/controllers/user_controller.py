@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from app.models.user import User
-from app.extensions import db
+from app.extensions import db, bcrypt
 
 def get_all_users():
     users = User.query.all()
@@ -16,10 +16,13 @@ def create_user():
     if not all(field in data for field in required_fields):
         return jsonify({'error': 'Missing required fields'}), 400
 
+    # Hash the password before saving
+    hashed_password = bcrypt.generate_password_hash(data['password_hash']).decode('utf-8')
+
     new_user = User(
         name=data['name'],
         email=data['email'],
-        password_hash=data['password_hash'],
+        password_hash=hashed_password,
         phone=data['phone'],
         role=data.get('role', 'user')
     )
