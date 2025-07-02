@@ -14,7 +14,7 @@ def create_app():
     from . import models
     bcrypt.init_app(app)
     jwt.init_app(app)
-    cors.init_app(app, resources={r"/api/*": {"origins": os.getenv("FRONTEND_URL")}})
+    cors.init_app(app, resources={r"/api/*": {"origins": os.getenv("FRONTEND_URL")}}, supports_credentials=True, expose_headers=["Authorization"])
 
     register_routes(app)
 

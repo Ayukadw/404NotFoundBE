@@ -1,5 +1,5 @@
 from flask import request, jsonify
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, verify_jwt_in_request
 from app.models.user import User
 from app.extensions import db, bcrypt
 
@@ -12,7 +12,7 @@ def login():
     if not user or not bcrypt.check_password_hash(user.password_hash, data['password']):
         return jsonify({'message': 'Email atau password salah'}), 401
 
-    access_token = create_access_token(identity=user.id)
+    access_token = create_access_token(identity=str(user.id))
     return jsonify({
         'access_token': access_token,
         'user': {
@@ -47,11 +47,17 @@ def register():
 
 @jwt_required()
 def get_profile():
-    user_id = get_jwt_identity()
-    user = User.query.get_or_404(user_id)
-    return jsonify({
-        'id': user.id,
-        'name': user.name,
-        'email': user.email,
-        'role': user.role
-    })
+    try:
+        print('Authorization Header:', request.headers.get('Authorization'))
+        verify_jwt_in_request()
+        user_id = get_jwt_identity()
+        user = User.query.get_or_404(user_id)
+        return jsonify({
+            'id': user.id,
+            'name': user.name,
+            'email': user.email,
+            'role': user.role
+        })
+    except Exception as e:
+        print('JWT Error:', str(e))
+        return jsonify({'error': 'Invalid or missing token', 'detail': str(e)}), 401
