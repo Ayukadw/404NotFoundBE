@@ -7,7 +7,7 @@ class Size(db.Model):
     name = db.Column(db.String(100), nullable=False)
 
     # Relationships
-    costumes = db.relationship('Costume', back_populates='size', lazy=True)
+    costumes = db.relationship('CostumeSize', back_populates='size')
 
     def to_dict(self):
         return {
