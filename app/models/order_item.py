@@ -19,7 +19,10 @@ class OrderItem(db.Model):
             'id': self.id,
             'order_id': self.order_id,
             'costume_id': self.costume_id,
+            'costume_name': self.costumes.name if self.costumes else None,
             'size_id': self.size_id,
+            'size_name': self.size.name if self.size else None,
             'quantity': self.quantity,
-            'price_snapshot': self.price_snapshot
+            'price_snapshot': self.price_snapshot,
+            'total_price': self.quantity * self.price_snapshot
         }

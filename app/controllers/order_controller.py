@@ -98,3 +98,7 @@ def delete_order(order_id):
     db.session.delete(order)
     db.session.commit()
     return jsonify({'message': 'Order deleted'})
+
+def get_orders_by_user(user_id):
+    orders = Order.query.filter_by(user_id=user_id).all()
+    return jsonify([o.to_dict() for o in orders])
