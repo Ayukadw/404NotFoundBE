@@ -14,7 +14,7 @@ class Costume(db.Model):
 
     # Relationships
     category = db.relationship('Category', back_populates='costumes')
-    order_items = db.relationship('OrderItem', back_populates='costumes')
+    order_items = db.relationship('OrderItem', back_populates='costume')
     sizes = db.relationship('CostumeSize', back_populates='costumes')
 
     def to_dict(self):

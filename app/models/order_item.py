@@ -11,7 +11,7 @@ class OrderItem(db.Model):
     price_snapshot = db.Column(db.Float, nullable=False)
 
     order = db.relationship('Order', back_populates='order_items')
-    costumes = db.relationship('Costume', back_populates='order_items')
+    costume = db.relationship('Costume', back_populates='order_items')
     size = db.relationship('Size')  # ini tambahan penting
 
     def to_dict(self):
@@ -19,7 +19,10 @@ class OrderItem(db.Model):
             'id': self.id,
             'order_id': self.order_id,
             'costume_id': self.costume_id,
+            'costume_name': self.costume.name if self.costume else None,
             'size_id': self.size_id,
+            'size_name': self.size.name if self.size else None,
             'quantity': self.quantity,
-            'price_snapshot': self.price_snapshot
+            'price_snapshot': self.price_snapshot,
+            'total_price': self.quantity * self.price_snapshot
         }
