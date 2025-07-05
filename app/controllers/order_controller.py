@@ -7,6 +7,7 @@ from app.models.payment import Payment
 from app.models.costume_size import CostumeSize
 from app.extensions import db
 from datetime import datetime
+from app.controllers.costume_controller import update_costume_stock
 
 def get_all_orders():
     orders = Order.query.all()
@@ -60,6 +61,9 @@ def create_order():
 
         costume_size.stock -= quantity
         db.session.add(costume_size)
+
+        # Update stok costume utama
+        update_costume_stock(costume_size.costume_id)
 
         # 3. Tambahkan OrderItem
         days = (return_date - rental_date).days
