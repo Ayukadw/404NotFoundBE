@@ -1,4 +1,5 @@
 from app.extensions import db
+from datetime import datetime
 
 class Order(db.Model):
     __tablename__ = 'orders'
@@ -10,6 +11,8 @@ class Order(db.Model):
     address = db.Column(db.Text, nullable=False)
     status = db.Column(db.String(50), nullable=False)
     payment_status = db.Column(db.String(50), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     # Relationships
     order_items = db.relationship('OrderItem', back_populates='order', lazy=True)
@@ -24,6 +27,8 @@ class Order(db.Model):
         return {
             'id': self.id,
             'user_id': self.user_id,
+            'user_name': self.user.name if self.user else None,
+            'user_email': self.user.email if self.user else None,
             'rental_date': self.rental_date.isoformat() if self.rental_date else None,
             'return_date': self.return_date.isoformat() if self.return_date else None,
             'address': self.address,
@@ -31,5 +36,8 @@ class Order(db.Model):
             'payment_status': payment_status,
             'order_items': order_items,
             'total_price': total_price,
-            'payment_method': payment_method
+            'payment_method': payment_method,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'payment': self.payment.to_dict() if self.payment else None
         }

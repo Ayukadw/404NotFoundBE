@@ -109,6 +109,33 @@ def update_order(order_id):
     db.session.commit()
     return jsonify(order.to_dict())
 
+def update_order_status(order_id):
+    order = Order.query.get_or_404(order_id)
+    data = request.get_json()
+    
+    if 'status' not in data:
+        return jsonify({'error': 'Status is required'}), 400
+    
+    order.status = data['status']
+    db.session.commit()
+    return jsonify(order.to_dict())
+
+def update_order_payment_status(order_id):
+    order = Order.query.get_or_404(order_id)
+    data = request.get_json()
+    
+    if 'payment_status' not in data:
+        return jsonify({'error': 'Payment status is required'}), 400
+    
+    order.payment_status = data['payment_status']
+    
+    # Update payment status juga jika ada payment record
+    if order.payment:
+        order.payment.status = data['payment_status']
+    
+    db.session.commit()
+    return jsonify(order.to_dict())
+
 def delete_order(order_id):
     order = Order.query.get_or_404(order_id)
     db.session.delete(order)
