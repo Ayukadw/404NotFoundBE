@@ -19,7 +19,6 @@ def login():
             'id': user.id,
             'name': user.name,
             'email': user.email,
-            'phone': user.phone,
             'role': user.role
         }
     }), 200
@@ -57,7 +56,6 @@ def get_profile():
             'id': user.id,
             'name': user.name,
             'email': user.email,
-            'phone': user.phone,
             'role': user.role
         })
     except Exception as e:

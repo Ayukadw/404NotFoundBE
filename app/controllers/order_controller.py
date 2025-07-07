@@ -7,6 +7,7 @@ from app.models.payment import Payment
 from app.models.costume_size import CostumeSize
 from app.extensions import db
 from datetime import datetime
+from app.controllers.costume_controller import update_costume_stock
 
 def get_all_orders():
     orders = Order.query.all()
@@ -61,6 +62,9 @@ def create_order():
         costume_size.stock -= quantity
         db.session.add(costume_size)
 
+        # Update stok costume utama
+        update_costume_stock(costume_size.costume_id)
+
         # 3. Tambahkan OrderItem
         days = (return_date - rental_date).days
         total_price = price_per_day * quantity * days
@@ -106,6 +110,33 @@ def update_order(order_id):
     for key in ['rental_date', 'return_date', 'address', 'status', 'payment_status']:
         if key in data:
             setattr(order, key, data[key])
+    db.session.commit()
+    return jsonify(order.to_dict())
+
+def update_order_status(order_id):
+    order = Order.query.get_or_404(order_id)
+    data = request.get_json()
+    
+    if 'status' not in data:
+        return jsonify({'error': 'Status is required'}), 400
+    
+    order.status = data['status']
+    db.session.commit()
+    return jsonify(order.to_dict())
+
+def update_order_payment_status(order_id):
+    order = Order.query.get_or_404(order_id)
+    data = request.get_json()
+    
+    if 'payment_status' not in data:
+        return jsonify({'error': 'Payment status is required'}), 400
+    
+    order.payment_status = data['payment_status']
+    
+    # Update payment status juga jika ada payment record
+    if order.payment:
+        order.payment.status = data['payment_status']
+    
     db.session.commit()
     return jsonify(order.to_dict())
 

@@ -39,6 +39,10 @@ def create_costume():
         db.session.add(cs)
 
     db.session.commit()
+
+    # Perbarui stock costume utama berdasarkan semua ukuran
+    update_costume_stock(costume.id)
+
     return jsonify(costume.to_dict()), 201
 
 
@@ -72,8 +76,8 @@ def update_costume(costume_id):
                     stock=size_data['stock']
                 )
                 db.session.add(new_costume_size)
-
-        db.session.commit()
+            db.session.commit()
+    update_costume_stock(costume.id)
 
     return jsonify(costume.to_dict())
 
@@ -88,3 +92,10 @@ def delete_costume(costume_id):
     db.session.commit()
     
     return jsonify({'message': 'Costume deleted'})
+
+def update_costume_stock(costume_id):
+    costume = Costume.query.get(costume_id)
+    if costume:
+        total_stock = sum(size.stock for size in costume.sizes)
+        costume.stock = total_stock
+        db.session.commit()
