@@ -56,7 +56,8 @@ def get_profile():
             'id': user.id,
             'name': user.name,
             'email': user.email,
-            'role': user.role
+            'role': user.role,
+            'phone': user.phone
         })
     except Exception as e:
         print('JWT Error:', str(e))

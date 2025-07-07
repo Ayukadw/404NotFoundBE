@@ -6,7 +6,7 @@ from app.models.order_item import OrderItem
 from app.models.payment import Payment
 from app.models.costume_size import CostumeSize
 from app.extensions import db
-from datetime import datetime
+from datetime import datetime, date
 from app.controllers.costume_controller import update_costume_stock
 
 def get_all_orders():
@@ -149,3 +149,33 @@ def delete_order(order_id):
 def get_orders_by_user(user_id):
     orders = Order.query.filter_by(user_id=user_id).all()
     return jsonify([o.to_dict() for o in orders])
+
+def return_order(order_id):
+    order = Order.query.get_or_404(order_id)
+    if order.status == "returned":
+        return jsonify({'error': 'Order already returned'}), 400
+
+    today = date.today()
+    order.actual_return_date = today
+    late_days = (today - order.return_date).days
+    if late_days > 0:
+        order.is_late = True
+        order.late_days = late_days
+        order.late_fee = late_days * 10000  # contoh denda 10.000/hari
+    else:
+        order.is_late = False
+        order.late_days = 0
+        order.late_fee = 0.0
+
+    for item in order.order_items:
+        costume_size = CostumeSize.query.filter_by(
+            costume_id=item.costume_id,
+            size_id=item.size_id
+        ).first()
+        if costume_size:
+            costume_size.stock += item.quantity
+            db.session.add(costume_size)
+            update_costume_stock(costume_size.costume_id)
+    order.status = "returned"
+    db.session.commit()
+    return jsonify({'message': 'Order returned and stock updated.'})

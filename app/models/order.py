@@ -11,6 +11,10 @@ class Order(db.Model):
     address = db.Column(db.Text, nullable=False)
     status = db.Column(db.String(50), nullable=False)
     payment_status = db.Column(db.String(50), nullable=False)
+    actual_return_date = db.Column(db.Date, nullable=True)
+    is_late = db.Column(db.Boolean, default=False)
+    late_days = db.Column(db.Integer, default=0)
+    late_fee = db.Column(db.Float, default=0.0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
@@ -31,6 +35,10 @@ class Order(db.Model):
             'user_email': self.user.email if self.user else None,
             'rental_date': self.rental_date.isoformat() if self.rental_date else None,
             'return_date': self.return_date.isoformat() if self.return_date else None,
+            'actual_return_date': self.actual_return_date.isoformat() if self.actual_return_date else None,
+            'is_late': self.is_late,
+            'late_days': self.late_days,
+            'late_fee': self.late_fee,
             'address': self.address,
             'status': self.status,
             'payment_status': payment_status,
