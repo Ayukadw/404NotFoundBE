@@ -42,7 +42,8 @@ def create_order():
             return_date=return_date,
             address=data['address'],
             status=data['status'],
-            payment_status=data['payment_status']
+            payment_status=data['payment_status'],
+            deposit=300000
         )
         db.session.add(new_order)
         db.session.flush()  # agar bisa akses new_order.id
@@ -155,17 +156,46 @@ def return_order(order_id):
     if order.status == "returned":
         return jsonify({'error': 'Order already returned'}), 400
 
+    data = request.get_json() or {}
+    damage_level = data.get('damage_level', 'none')
+    order.damage_level = damage_level
+
     today = date.today()
     order.actual_return_date = today
     late_days = (today - order.return_date).days
+    late_fee = 0
     if late_days > 0:
         order.is_late = True
         order.late_days = late_days
-        order.late_fee = late_days * 10000  # contoh denda 10.000/hari
+        # Hitung total harga sewa per hari untuk semua item
+        total_rental_days = (order.return_date - order.rental_date).days
+        total_daily_price = 0
+        for item in order.order_items:
+            price_per_day = 0
+            if total_rental_days > 0:
+                price_per_day = item.price_snapshot / total_rental_days
+            total_daily_price += price_per_day
+        late_fee = 100000
+        if late_days > 1:
+            late_fee += total_daily_price * (late_days - 1)
+        order.late_fee = late_fee
     else:
         order.is_late = False
         order.late_days = 0
         order.late_fee = 0.0
+
+    # Hitung potongan deposit karena kerusakan
+    deposit = order.deposit or 300000
+    damage_cut = 0
+    if damage_level == 'minim':
+        damage_cut = 0.1 * deposit
+    elif damage_level == 'sedang':
+        damage_cut = 0.5 * deposit
+    elif damage_level == 'berat':
+        damage_cut = 1.0 * deposit
+    # Total potongan = denda telat + potongan kerusakan (maksimal deposit)
+    total_cut = min(deposit, late_fee + damage_cut)
+    order.deposit_returned = deposit - total_cut
 
     for item in order.order_items:
         costume_size = CostumeSize.query.filter_by(
