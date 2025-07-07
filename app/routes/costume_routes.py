@@ -8,3 +8,4 @@ costume_bp.route('/costumes', methods=['POST'])(costume_controller.create_costum
 costume_bp.route('/costumes/<int:costume_id>', methods=['GET'])(costume_controller.get_costume_by_id)
 costume_bp.route('/costumes/<int:costume_id>', methods=['PUT', 'PATCH'])(costume_controller.update_costume)
 costume_bp.route('/costumes/<int:costume_id>', methods=['DELETE'])(costume_controller.delete_costume)
+

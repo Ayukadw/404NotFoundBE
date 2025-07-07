@@ -2,6 +2,7 @@ from flask import request, jsonify
 from app.models.costume import Costume
 from app.models.costume_size import CostumeSize
 from app.extensions import db
+from sqlalchemy.sql.expression import func
 
 def get_all_costumes():
     costumes = Costume.query.all()
@@ -99,3 +100,13 @@ def update_costume_stock(costume_id):
         total_stock = sum(size.stock for size in costume.sizes)
         costume.stock = total_stock
         db.session.commit()
+
+def get_featured_costume():
+    costume = Costume.query.order_by(func.random()).first()
+    if not costume:
+        return jsonify({'error': 'No costume found'}), 404
+    return jsonify(costume.to_dict())
+
+def get_recommended_costumes():
+    costumes = Costume.query.order_by(func.random()).limit(4).all()
+    return jsonify([c.to_dict() for c in costumes])

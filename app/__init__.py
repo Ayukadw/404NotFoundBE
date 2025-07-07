@@ -14,7 +14,7 @@ def create_app():
     from . import models
     bcrypt.init_app(app)
     jwt.init_app(app)
-    cors.init_app(app, resources={r"/api/*": {"origins": os.getenv("FRONTEND_URL")}}, supports_credentials=True, expose_headers=["Authorization"])
+    cors.init_app(app, resources={r"/*": {"origins": os.getenv("FRONTEND_URL")}}, supports_credentials=True, expose_headers=["Authorization"])
 
     # Test route untuk static files
     @app.route('/test-static/<filename>')
