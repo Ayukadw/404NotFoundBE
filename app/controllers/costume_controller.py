@@ -5,8 +5,15 @@ from app.extensions import db
 from sqlalchemy.sql.expression import func
 
 def get_all_costumes():
-    costumes = Costume.query.all()
-    return jsonify([c.to_dict() for c in costumes])
+    all_costumes = Costume.query.all()
+    available_costumes = []
+
+    for costume in all_costumes:
+        total_stock = sum([size.stock for size in costume.sizes])
+        if total_stock > 0:
+            available_costumes.append(costume.to_dict())
+
+    return jsonify(available_costumes)
 
 def create_costume():
     data = request.get_json()
