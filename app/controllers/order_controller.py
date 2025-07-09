@@ -75,7 +75,7 @@ def create_order():
             costume_id=costume_id,
             size_id=size_id,
             quantity=quantity,
-            price_snapshot=total_price
+            price_snapshot=price_per_day
         )
         db.session.add(order_item)
 
