@@ -15,8 +15,9 @@ class Order(db.Model):
     is_late = db.Column(db.Boolean, default=False)
     late_days = db.Column(db.Integer, default=0)
     late_fee = db.Column(db.Float, default=0.0)
+    uncovered_late_fee = db.Column(db.Float, default=0.0)
     deposit = db.Column(db.Float, default=300000)
-    damage_level = db.Column(db.String(20), nullable=True)
+    damage_level = db.Column(db.String(255), nullable=True)
     deposit_returned = db.Column(db.Float, default=0.0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
@@ -51,6 +52,7 @@ class Order(db.Model):
             'deposit': self.deposit,
             'damage_level': self.damage_level,
             'deposit_returned': self.deposit_returned,
+            'uncovered_late_fee': self.uncovered_late_fee,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
             'payment': self.payment.to_dict() if self.payment else None

@@ -9,7 +9,6 @@ class OrderItem(db.Model):
     size_id = db.Column(db.Integer, db.ForeignKey('sizes.id'), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     price_snapshot = db.Column(db.Float, nullable=False)
-
     order = db.relationship('Order', back_populates='order_items')
     costume = db.relationship('Costume', back_populates='order_items')
     size = db.relationship('Size')  # ini tambahan penting

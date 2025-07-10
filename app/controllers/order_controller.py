@@ -43,7 +43,7 @@ def create_order():
             address=data['address'],
             status=data['status'],
             payment_status=data['payment_status'],
-            deposit=300000
+            deposit=data.get('deposit', 300000)
         )
         db.session.add(new_order)
         db.session.flush()  # agar bisa akses new_order.id
@@ -126,6 +126,18 @@ def update_order_status(order_id):
     
     if 'status' not in data:
         return jsonify({'error': 'Status is required'}), 400
+
+    # Jika status diubah menjadi cancelled, kembalikan stok
+    if data['status'] == "cancelled" and order.status != "cancelled":
+        for item in order.order_items:
+            costume_size = CostumeSize.query.filter_by(
+                costume_id=item.costume_id,
+                size_id=item.size_id
+            ).first()
+            if costume_size:
+                costume_size.stock += item.quantity
+                db.session.add(costume_size)
+                update_costume_stock(costume_size.costume_id)
     
     order.status = data['status']
     db.session.commit()
@@ -163,8 +175,15 @@ def return_order(order_id):
         return jsonify({'error': 'Order already returned'}), 400
 
     data = request.get_json() or {}
-    damage_level = data.get('damage_level', 'none')
-    order.damage_level = damage_level
+    # data['damage_levels'] = [{item_id: 1, damage_level: "none|berat|minim"}, ...]
+    damage_levels = data.get('damage_levels', [])
+
+    # Update damage_level per item
+    for item in order.order_items:
+        dl = next((d['damage_level'] for d in damage_levels if d['item_id'] == item.id), None)
+        if dl is not None:
+            item.damage_level = dl
+            db.session.add(item)  # Pastikan perubahan damage_level tersimpan
 
     today = date.today()
     order.actual_return_date = today
@@ -173,36 +192,62 @@ def return_order(order_id):
     if late_days > 0:
         order.is_late = True
         order.late_days = late_days
-        # Hitung total harga sewa per hari untuk semua item
-        total_rental_days = (order.return_date - order.rental_date).days
-        total_daily_price = 0
+        # Denda hari pertama: 25% harga per hari * quantity semua item
+        # Denda hari kedua dst: 50% harga per hari * quantity * (late_days - 1)
+        first_day_fine = 0
+        next_days_fine = 0
         for item in order.order_items:
-            price_per_day = 0
-            if total_rental_days > 0:
-                price_per_day = item.price_snapshot / total_rental_days
-            total_daily_price += price_per_day
-        late_fee = 100000
-        if late_days > 1:
-            late_fee += total_daily_price * (late_days - 1)
+            price_per_day = item.costume.price_per_day if item.costume else 0
+            qty = item.quantity
+            first_day_fine += 0.25 * price_per_day * qty
+            if late_days > 1:
+                next_days_fine += 0.5 * price_per_day * qty * (late_days - 1)
+        late_fee = first_day_fine + next_days_fine
         order.late_fee = late_fee
     else:
         order.is_late = False
         order.late_days = 0
         order.late_fee = 0.0
 
-    # Hitung potongan deposit karena kerusakan
-    deposit = order.deposit or 300000
+    # Hitung potongan deposit karena kerusakan per unit
+    total_deposit = 0
     damage_cut = 0
-    if damage_level == 'minim':
-        damage_cut = 0.1 * deposit
-    elif damage_level == 'sedang':
-        damage_cut = 0.5 * deposit
-    elif damage_level == 'berat':
-        damage_cut = 1.0 * deposit
-    # Total potongan = denda telat + potongan kerusakan (maksimal deposit)
-    total_cut = min(deposit, late_fee + damage_cut)
-    order.deposit_returned = deposit - total_cut
+    for item in order.order_items:
+        deposit_per_unit = (item.costume.price_per_day if item.costume else 0) * 0.5
+        damage_levels = (item.damage_level or "").split("|")
+        for damage in damage_levels:
+            if damage == "none":
+                cut = 0
+            elif damage == "minim":
+                cut = 0.1 * deposit_per_unit
+            elif damage == "sedang":
+                cut = 0.5 * deposit_per_unit
+            elif damage == "berat":
+                cut = 1.0 * deposit_per_unit
+            else:
+                cut = 0
+            damage_cut += cut
+        total_deposit += deposit_per_unit * item.quantity
 
+    # Denda keterlambatan sudah dihitung sebelumnya: late_fee
+    # Potongan deposit maksimal hanya sampai deposit
+    total_cut = min(total_deposit, damage_cut + late_fee)
+    order.deposit_returned = max(0, total_deposit - total_cut)
+
+    # Sisa denda yang belum tertutupi deposit
+    uncovered_late_fee = max(0, (damage_cut + late_fee) - total_deposit)
+    order.uncovered_late_fee = uncovered_late_fee
+
+    # Gabungkan semua damage_level dari order_items ke order.damage_level
+    damage_level_summary = []
+    for item in order.order_items:
+        if item.damage_level:
+            label = f"{item.costume.name if item.costume else 'Item'}: {item.damage_level}"
+            damage_level_summary.append(label)
+    order.damage_level = ", ".join(damage_level_summary) if damage_level_summary else None
+    db.session.add(order)
+
+    # Kembalikan stok
     for item in order.order_items:
         costume_size = CostumeSize.query.filter_by(
             costume_id=item.costume_id,
@@ -214,4 +259,4 @@ def return_order(order_id):
             update_costume_stock(costume_size.costume_id)
     order.status = "returned"
     db.session.commit()
-    return jsonify({'message': 'Order returned and stock updated.'})
+    return jsonify({'message': 'Order returned and stock updated.', 'uncovered_late_fee': uncovered_late_fee})
