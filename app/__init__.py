@@ -3,6 +3,7 @@ from .extensions import db, migrate, bcrypt, jwt, cors
 from .config import Config
 from .routes import register_routes
 import os
+from flask_cors import CORS
 
 
 def create_app():
@@ -14,7 +15,14 @@ def create_app():
     from . import models
     bcrypt.init_app(app)
     jwt.init_app(app)
-    cors.init_app(app, resources={r"/*": {"origins": os.getenv("FRONTEND_URL")}}, supports_credentials=True, expose_headers=["Authorization"])
+    
+    # Konfigurasi CORS yang lebih permisif untuk development
+    cors.init_app(app, 
+                  resources={r"/*": {"origins": "*"}}, 
+                  supports_credentials=True, 
+                  expose_headers=["Authorization"],
+                  allow_headers=["Content-Type", "Authorization"],
+                  methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
     # Test route untuk static files
     @app.route('/test-static/<filename>')

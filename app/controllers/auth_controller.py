@@ -62,3 +62,12 @@ def get_profile():
     except Exception as e:
         print('JWT Error:', str(e))
         return jsonify({'error': 'Invalid or missing token', 'detail': str(e)}), 401
+
+def logout():
+    try:
+        # Untuk logout, kita hanya perlu mengembalikan response sukses
+        # Token akan dihandle di frontend untuk dibersihkan
+        return jsonify({'message': 'Logout berhasil'}), 200
+    except Exception as e:
+        print('Logout Error:', str(e))
+        return jsonify({'error': 'Logout gagal', 'detail': str(e)}), 500
