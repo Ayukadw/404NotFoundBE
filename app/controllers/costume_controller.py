@@ -66,12 +66,20 @@ def update_costume(costume_id):
     for key in ['name', 'description', 'category_id', 'price_per_day', 'image_url', 'status']:
         if key in data:
             setattr(costume, key, data[key])
-    
     db.session.commit()
 
     # Now update sizes and stock
     if 'sizes' in data:
         sizes_data = data['sizes']  # This should be an array of {size_id, stock} objects
+        new_size_ids = [s['size_id'] for s in sizes_data]
+
+        # 1. Hapus CostumeSize yang tidak ada di sizes_data
+        old_sizes = CostumeSize.query.filter_by(costume_id=costume.id).all()
+        for old in old_sizes:
+            if old.size_id not in new_size_ids:
+                db.session.delete(old)
+
+        # 2. Update/insert CostumeSize yang ada di sizes_data
         for size_data in sizes_data:
             costume_size = CostumeSize.query.filter_by(costume_id=costume.id, size_id=size_data['size_id']).first()
             if costume_size:
@@ -84,9 +92,9 @@ def update_costume(costume_id):
                     stock=size_data['stock']
                 )
                 db.session.add(new_costume_size)
-            db.session.commit()
-    update_costume_stock(costume.id)
+        db.session.commit()
 
+    update_costume_stock(costume.id)
     return jsonify(costume.to_dict())
 
 
