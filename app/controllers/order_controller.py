@@ -66,16 +66,22 @@ def create_order():
         # Update stok costume utama
         update_costume_stock(costume_size.costume_id)
 
-        # 3. Tambahkan OrderItem
+        # Hitung total harga item (tanpa deposit)
         days = (return_date - rental_date).days
-        total_price = price_per_day * quantity * days
+        if days < 1:
+            raise Exception("Tanggal kembali harus setelah tanggal sewa.")
+        price_per_day = data.get('price_per_day', 0)
+        quantity = int(data['quantity'])
+        # Ambil total harga item dari frontend jika dikirim, jika tidak hitung manual
+        total_item_price = data.get('price_snapshot') or (price_per_day * quantity * days)
 
+        # 3. Tambahkan OrderItem
         order_item = OrderItem(
             order_id=new_order.id,
             costume_id=costume_id,
             size_id=size_id,
             quantity=quantity,
-            price_snapshot=price_per_day
+            price_snapshot=total_item_price  # total harga item
         )
         db.session.add(order_item)
 

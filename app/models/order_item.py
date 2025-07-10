@@ -23,6 +23,7 @@ class OrderItem(db.Model):
             'size_id': self.size_id,
             'size_name': self.size.name if self.size else None,
             'quantity': self.quantity,
-            'price_snapshot': self.price_snapshot,
-            'total_price': self.quantity * self.price_snapshot
+            'price_snapshot': self.price_snapshot,  # total harga item
+            'price_per_day': self.costume.price_per_day if self.costume else None,  # harga satuan
+            'total_price': self.price_snapshot
         }
