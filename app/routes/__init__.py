@@ -7,6 +7,7 @@ def register_routes(app):
     from app.routes.payment_routes import payment_bp
     from app.routes.order_item_routes import order_item_bp
     from app.routes.size_routes import size_bp
+    from app.routes.costume_size_routes import costume_size_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api")
     app.register_blueprint(user_bp, url_prefix="/api")
@@ -16,3 +17,4 @@ def register_routes(app):
     app.register_blueprint(order_bp, url_prefix="/api")
     app.register_blueprint(order_item_bp, url_prefix="/api")
     app.register_blueprint(payment_bp, url_prefix="/api")
+    app.register_blueprint(costume_size_bp, url_prefix="/api")
